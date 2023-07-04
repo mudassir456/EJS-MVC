@@ -1,28 +1,41 @@
 let path = require("path");
-let products = require("../models/product")
+let Shop = require("../models/product");
+const { Types } = require("mongoose");
 
 module.exports ={
-    get :function(req,res){
-        res.render(path.join(__dirname,"../views","index"),{products})
+    get :async function(req,res){
+        const products = await Shop.find()
+        res.send({products})
     },
-    post :function(req,res){
-        let {name, price} = req.body;
-        products.push({name,price});
-        res.send("post method done")
+    post :async function(req,res){
+        try {
+            let {name, price} = req.body;
+        let products = await Shop.create({
+            _id :new Types.ObjectId,
+            name : name,
+            price : price
+        })
+        res.send({products})
+        } catch (err){
+            console.log("error found")
+            console.log(err)
+        }
     },
-    put :function(req,res){
+    put :async function(req,res){
         let {name,price} = req.body
         let {userid}= req.params;
-        userid = Number(userid); 
-        products[userid].name=name;
-        products[userid].price= price;
-        res.send("put method done")
+        let products = await Shop.updateOne({
+            _id : userid
+        },{
+            name,
+            price
+        }) 
+        res.send({products})
     },
-    delete :function(req,res){
+    delete :async function(req,res){
         let {name,price} = req.body
         let {userid} = req.params;
-        userid = Number(userid);
-        products.splice(userid,1)
-        res.send("delete method done")
+        let products = await Shop.findOneAndRemove(userid)
+        res.send({products})
     }
 }
